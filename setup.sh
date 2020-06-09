@@ -52,11 +52,21 @@ isapt(){
     return 0
 }
 
+
 if isyum; then
-    sudo yum check-update
-    sudo yum install epel-release
+    yum check-update
 elif isapt; then
     apt update
+fi
+
+# in case in container
+if [[ $(whoami) == *root* ]]; then
+    $PKG_MNGER install -y sudo
+fi
+
+# epel
+if isyum; then
+sudo yum install -y epel-release
 fi
 
 # git
@@ -65,18 +75,29 @@ git config --global user.name "JX Wang"
 git config --global user.email "jxwang92@gmail.com"
 $echo "Done forget add ssh key to github"
 
+# make
+sudo $PKG_MNGER install -y curl make cmake gcc g++ python3 neovim python3-neovim vim ctags
 
-# nvim
-# mkdir -p ~/.config/nvim/init.vim
+# to home
+CWD=$(pwd)
+cd ~
+
+# vimrc
+git clone https://github.com/jaxonwang/vimrc
+curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
+    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+cp ./vimrc/.vimrc ~/
+vim -E --not-a-term -c "PlugInstall|q|q"
+
+# config nvim
+mkdir -p ~/.config/nvim/
 nvim_config="set runtimepath^=~/.vim runtimepath+=~/.vim/after\n
 let &packpath=&runtimepath\n
 source ~/.vimrc"
-echo -e $nvim_config 
-# > ~/.config/nvim/init.vim
+echo -e $nvim_config > ~/.config/nvim/init.vim
 
+# ssh key-gen
+yes| ssh-keygen -N ""
 
-
-
-
-
-
+# finish
+cd ${CWD}
