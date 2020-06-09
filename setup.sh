@@ -40,16 +40,16 @@ echo "Set the pacakge manager to "$PKG_MNGER
 
 isyum(){
     if [[ $PKG_MNGER == "yum" ]]; then
-        return 1
+        return 0 # true
     fi
-    return 0
+    return 1
 }
 
 isapt(){
     if [[ $PKG_MNGER == "apt" ]]; then
-        return 1
+        return 0
     fi
-    return 0
+    return 1
 }
 
 
@@ -67,6 +67,7 @@ fi
 # epel
 if isyum; then
 sudo yum install -y epel-release
+yum check-update
 fi
 
 # git
@@ -76,7 +77,8 @@ git config --global user.email "jxwang92@gmail.com"
 $echo "Done forget add ssh key to github"
 
 # make
-sudo $PKG_MNGER install -y curl make cmake gcc g++ python3 neovim python3-neovim vim ctags
+sudo $PKG_MNGER install -y curl make cmake gcc python3 neovim vim ctags
+sudo $PKG_MNGER install -y g++ python3-neovim
 
 # to home
 CWD=$(pwd)
@@ -97,7 +99,7 @@ source ~/.vimrc"
 echo -e $nvim_config > ~/.config/nvim/init.vim
 
 # ssh key-gen
-yes| ssh-keygen -N ""
+cat /dev/zero | ssh-keygen -N ""
 
 # finish
 cd ${CWD}
