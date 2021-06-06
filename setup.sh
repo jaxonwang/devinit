@@ -79,7 +79,7 @@ fi
 sudo $PKG_MNGER install -y git
 git config --global user.name "JX Wang"
 git config --global user.email "jxwang92@gmail.com"
-$echo "Done forget add ssh key to github"
+echo "Done forget add ssh key to github"
 echo '*.swp' >> ~/.gitignore_global 
 echo '*.swo' >> ~/.gitignore_global 
 
