@@ -53,15 +53,20 @@ isapt(){
 }
 
 
-if isyum; then
-    yum check-update
-elif isapt; then
-    apt update
-fi
-
 # in case in container
 if [[ $(whoami) == *root* ]]; then
+    if isyum; then
+        yum check-update
+    elif isapt; then
+        apt update
+    fi
     $PKG_MNGER install -y sudo
+fi
+
+if isyum; then
+    sudo yum check-update
+elif isapt; then
+    sudo apt update
 fi
 
 # epel
@@ -75,10 +80,15 @@ sudo $PKG_MNGER install -y git
 git config --global user.name "JX Wang"
 git config --global user.email "jxwang92@gmail.com"
 $echo "Done forget add ssh key to github"
+echo '*.swp' >> ~/.gitignore_global 
+echo '*.swo' >> ~/.gitignore_global 
 
 # make
 sudo $PKG_MNGER install -y curl make cmake gcc python3 neovim vim ctags
-sudo $PKG_MNGER install -y g++ python3-neovim
+sudo $PKG_MNGER install -y g++ python3-neovim autoconf clang
+
+# rust
+curl https://sh.rustup.rs | sh -s -- -y
 
 # to home
 CWD=$(pwd)
@@ -100,6 +110,10 @@ echo -e $nvim_config > ~/.config/nvim/init.vim
 
 # ssh key-gen
 cat /dev/zero | ssh-keygen -N ""
+
+# set editor
+echo 'export VISUAL="vim"' >> ~/.bashrc
+echo 'export EDITOR="$VISUAL"' >> ~/.bashrc
 
 # finish
 cd ${CWD}
