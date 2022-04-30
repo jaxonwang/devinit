@@ -1,3 +1,6 @@
+set -x
+set -e
+
 if [ -f /etc/os-release ]; then
     # freedesktop.org and systemd
     . /etc/os-release
@@ -85,7 +88,10 @@ echo '*.swo' >> ~/.gitignore_global
 
 # make
 sudo $PKG_MNGER install -y curl make cmake gcc python3 neovim vim ctags
-sudo $PKG_MNGER install -y g++ python3-neovim autoconf clang
+sudo $PKG_MNGER install -y g++ python3-neovim autoconf clang zsh zsh-autosuggestions
+
+# change shell
+sudo chsh -s $(which zsh) $(whoami)
 
 # rust
 curl https://sh.rustup.rs | sh -s -- -y
