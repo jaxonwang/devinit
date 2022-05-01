@@ -107,6 +107,9 @@ zsh tig tmux
 [[ $(grep swp ~/.gitignore_global) -ne 0 ]] && echo '*.swp' >> ~/.gitignore_global 
 [[ $(grep swo ~/.gitignore_global) -ne 0 ]] && echo '*.swo' >> ~/.gitignore_global 
 
+git clone --recursive --depth 1 https://github.com/jaxonwang/myzsh ~/myzsh
+bash ~/myzsh/setup.sh
+
 # change shell
 if [[ $SHELL -ne $(command -v zsh) ]]; then
     sudo usermod -s $(which zsh) $(whoami)
@@ -142,7 +145,3 @@ cargo install bat ripgrep fd-find tokei zoxide
 if [[ ! -f $HOME/.ssh/id_ed25519 ]]; then
 cat /dev/zero | ssh-keygen -N "" -t ed25519
 fi 
-
-# set editor
-echo 'export VISUAL="vim"' >> ~/.bashrc
-echo 'export EDITOR="$VISUAL"' >> ~/.bashrc
