@@ -98,54 +98,50 @@ fi
 sudo $PKG_MNGER install $PKG_OPTS git curl wget \
 make cmake autoconf automake \
 gcc g++ clang python3 \
-neovim vim python3-neovim \
-zsh
+neovim python3-neovim \
+zsh tig tmux
 
 # git
-git config --global user.name "JX Wang"
-git config --global user.email "jxwang92@gmail.com"
-echo "Done forget add ssh key to github"
-echo '*.swp' >> ~/.gitignore_global 
-echo '*.swo' >> ~/.gitignore_global 
+[[ -z $(git config --global user.name) ]] && git config --global user.name "JX Wang"
+[[ -z $(git config --global user.email) ]] && git config --global user.email "jxwang92@gmail.com"
+[[ $(grep swp ~/.gitignore_global) -ne 0 ]] && echo '*.swp' >> ~/.gitignore_global 
+[[ $(grep swo ~/.gitignore_global) -ne 0 ]] && echo '*.swo' >> ~/.gitignore_global 
 
 # change shell
-sudo usermod -s $(which zsh) $(whoami)
+if [[ $SHELL -ne $(command -v zsh) ]]; then
+    sudo usermod -s $(which zsh) $(whoami)
+fi
 
 # conda
-case $ARCH in
-    amd64)
-        CONDA_LATEST_URL=https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-        ;;
-    arm64)
-        CONDA_LATEST_URL=https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh
-        ;;
-esac
-curl -L -o ~/miniconda.sh $CONDA_LATEST_URL
-bash ~/miniconda.sh -b -p $HOME/miniconda
-rm ~/miniconda.sh
-eval "$($HOME/miniconda/bin/conda shell.bash hook)" # shell setup for conda activation
-conda init
-conda init zsh
+if [[ ! $(command -v conda &>/dev/null) ]]; then
+    case $ARCH in
+        amd64)
+            CONDA_LATEST_URL=https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+            ;;
+        arm64)
+            CONDA_LATEST_URL=https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh
+            ;;
+    esac
+    curl -sSL -o ~/miniconda.sh $CONDA_LATEST_URL
+    bash ~/miniconda.sh -b -p $HOME/miniconda
+    rm ~/miniconda.sh
+    eval "$($HOME/miniconda/bin/conda shell.bash hook)" # shell setup for conda activation
+    conda init zsh
+fi
 
 # rust
-curl https://sh.rustup.rs | sh -s -- -y
+if [[ ! $(command -v cargo &>/dev/null) ]]; then
+    curl -sSL https://sh.rustup.rs | sh -s -- -y
+fi
+source $HOME/.cargo/env
 
-# vimrc
-git clone https://github.com/jaxonwang/vimrc ~/vimrc
-curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
-    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-ln -s ~/vimrc/.vimrc ~/.vimrc
-# vim +'PlugInstall --sync' +qa
-
-# config nvim
-mkdir -p ~/.config/nvim/
-nvim_config="set runtimepath^=~/.vim runtimepath+=~/.vim/after\n
-let &packpath=&runtimepath\n
-source ~/.vimrc"
-echo -e $nvim_config > ~/.config/nvim/init.vim
+# rust tools
+cargo install bat ripgrep fd-find tokei zoxide
 
 # ssh key-gen
+if [[ ! -f $HOME/.ssh/id_ed25519 ]]; then
 cat /dev/zero | ssh-keygen -N "" -t ed25519
+fi 
 
 # set editor
 echo 'export VISUAL="vim"' >> ~/.bashrc
