@@ -1,6 +1,7 @@
 set -x
 set -e
 
+# find distribution
 if [ -f /etc/os-release ]; then
     # freedesktop.org and systemd
     . /etc/os-release
@@ -30,6 +31,19 @@ else
     OS=$(uname -s)
     VER=$(uname -r)
 fi
+
+# find arch
+case $(uname -m) in
+    x86_64 | x86-64 | x64 | amd64)
+        ARCH=amd64
+        ;;
+    aarch64 | arm64)
+        ARCH=arm64
+        ;;
+    *)
+        err "CPU archtecture not supported."
+        ;;
+esac
 
 shopt -s nocasematch
 if [[ $OS == *"centos"* ]]; then
@@ -97,6 +111,22 @@ echo '*.swo' >> ~/.gitignore_global
 # change shell
 sudo usermod -s $(which zsh) $(whoami)
 
+# conda
+case $ARCH in
+    amd64)
+        CONDA_LATEST_URL=https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+        ;;
+    arm64)
+        CONDA_LATEST_URL=https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh
+        ;;
+esac
+curl -L -o ~/miniconda.sh $CONDA_LATEST_URL
+bash ~/miniconda.sh -b -p $HOME/miniconda
+rm ~/miniconda.sh
+eval "$($HOME/miniconda/bin/conda shell.bash hook)" # shell setup for conda activation
+conda init
+conda init zsh
+
 # rust
 curl https://sh.rustup.rs | sh -s -- -y
 
@@ -105,7 +135,7 @@ git clone https://github.com/jaxonwang/vimrc ~/vimrc
 curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
     https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 ln -s ~/vimrc/.vimrc ~/.vimrc
-vim +'PlugInstall --sync' +qa
+# vim +'PlugInstall --sync' +qa
 
 # config nvim
 mkdir -p ~/.config/nvim/
