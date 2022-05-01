@@ -66,8 +66,10 @@ if [[ $(whoami) == *root* ]]; then
     $PKG_MNGER install -y sudo
 fi
 
+PKG_OPTS=-y
 if isyum; then
     sudo yum check-update
+    PKG_OPTS="$PKG_OPTS --skip-broken"
 elif isapt; then
     sudo apt update
 fi
@@ -78,34 +80,32 @@ sudo yum install -y epel-release
 yum check-update
 fi
 
+# install many
+sudo $PKG_MNGER install $PKG_OPTS git curl wget \
+make cmake autoconf automake \
+gcc g++ clang python3 \
+neovim vim python3-neovim \
+zsh
+
 # git
-sudo $PKG_MNGER install -y git
 git config --global user.name "JX Wang"
 git config --global user.email "jxwang92@gmail.com"
 echo "Done forget add ssh key to github"
 echo '*.swp' >> ~/.gitignore_global 
 echo '*.swo' >> ~/.gitignore_global 
 
-# make
-sudo $PKG_MNGER install -y curl make cmake gcc python3 neovim vim ctags
-sudo $PKG_MNGER install -y g++ python3-neovim autoconf clang zsh zsh-autosuggestions
-
 # change shell
-sudo chsh -s $(which zsh) $(whoami)
+sudo usermod -s $(which zsh) $(whoami)
 
 # rust
 curl https://sh.rustup.rs | sh -s -- -y
 
-# to home
-CWD=$(pwd)
-cd ~
-
 # vimrc
-git clone https://github.com/jaxonwang/vimrc
+git clone https://github.com/jaxonwang/vimrc ~/vimrc
 curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
     https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-cp ./vimrc/.vimrc ~/
-vim -E --not-a-term -c "PlugInstall|q|q"
+ln -s ~/vimrc/.vimrc ~/.vimrc
+vim +'PlugInstall --sync' +qa
 
 # config nvim
 mkdir -p ~/.config/nvim/
@@ -115,11 +115,8 @@ source ~/.vimrc"
 echo -e $nvim_config > ~/.config/nvim/init.vim
 
 # ssh key-gen
-cat /dev/zero | ssh-keygen -N ""
+cat /dev/zero | ssh-keygen -N "" -t ed25519
 
 # set editor
 echo 'export VISUAL="vim"' >> ~/.bashrc
 echo 'export EDITOR="$VISUAL"' >> ~/.bashrc
-
-# finish
-cd ${CWD}

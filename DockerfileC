@@ -1,0 +1,4 @@
+FROM quay.io/centos/centos:stream9
+COPY ./setup.sh ./setup.sh
+RUN bash ./setup.sh
+CMD bash
