@@ -6,20 +6,20 @@ USER=$(whoami)
 if [ -f /etc/os-release ]; then
     # freedesktop.org and systemd
     . /etc/os-release
-    OS=$NAME
+    DIST=$NAME
     VER=$VERSION_ID
 elif type lsb_release >/dev/null 2>&1; then
     # linuxbase.org
-    OS=$(lsb_release -si)
+    DIST=$(lsb_release -si)
     VER=$(lsb_release -sr)
 elif [ -f /etc/lsb-release ]; then
     # For some versions of Debian/Ubuntu without lsb_release command
     . /etc/lsb-release
-    OS=$DISTRIB_ID
+    DIST=$DISTRIB_ID
     VER=$DISTRIB_RELEASE
 elif [ -f /etc/debian_version ]; then
     # Older Debian/Ubuntu/etc.
-    OS=Debian
+    DIST=Debian
     VER=$(cat /etc/debian_version)
 elif [ -f /etc/SuSe-release ]; then
     # Older SuSE/etc.
@@ -29,7 +29,7 @@ elif [ -f /etc/redhat-release ]; then
     ...
 else
     # Fall back to uname, e.g. "Linux <version>", also works for BSD, etc.
-    OS=$(uname -s)
+    DIST=$(uname -s)
     VER=$(uname -r)
 fi
 
@@ -47,11 +47,11 @@ case $(uname -m) in
 esac
 
 shopt -s nocasematch
-if [[ $OS == *"centos"* ]]; then
+if [[ $DIST == *"centos"* ]]; then
     PKG_MNGER=yum
-elif [[ $OS == *"ubuntu"* ]]; then
+elif [[ $DIST == *"ubuntu"* ]]; then
     PKG_MNGER=apt
-elif [[ $OS == *"debian"* ]]; then
+elif [[ $DIST == *"debian"* ]]; then
     PKG_MNGER=apt
 fi
 echo "Set the pacakge manager to "$PKG_MNGER
@@ -113,14 +113,16 @@ bash ~/myzsh/setup.sh
 
 # change shell
 if [[ $SHELL != $(command -v zsh) ]]; then
-    sudo usermod -s $(which zsh) $USER
+    sudo usermod -s $(command -v zsh) $USER
 fi
 
 # docker
+if [[ $DIST != *"centos"* ]]; then
 curl -fsSL https://get.docker.com -o get-docker.sh
 sudo sh get-docker.sh
 rm get-docker.sh
 sudo usermod -aG docker $USER
+fi
 
 # conda
 if [[ ! $(command -v conda &>/dev/null) ]]; then
