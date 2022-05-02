@@ -1,5 +1,6 @@
-set -x
-set -e
+set -exo pipefail
+
+USER=$(whoami)
 
 # find distribution
 if [ -f /etc/os-release ]; then
@@ -71,7 +72,7 @@ isapt(){
 
 
 # in case in container
-if [[ $(whoami) == *root* ]]; then
+if [[ $USER == *root* ]]; then
     if isyum; then
         yum check-update
     elif isapt; then
@@ -111,9 +112,15 @@ git clone --recursive --depth 1 https://github.com/jaxonwang/myzsh ~/myzsh
 bash ~/myzsh/setup.sh
 
 # change shell
-if [[ $SHELL -ne $(command -v zsh) ]]; then
-    sudo usermod -s $(which zsh) $(whoami)
+if [[ $SHELL != $(command -v zsh) ]]; then
+    sudo usermod -s $(which zsh) $USER
 fi
+
+# docker
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+rm get-docker.sh
+sudo usermod -aG docker $USER
 
 # conda
 if [[ ! $(command -v conda &>/dev/null) ]]; then
@@ -132,14 +139,16 @@ if [[ ! $(command -v conda &>/dev/null) ]]; then
     conda init zsh
 fi
 
+# conda tools
+conda install -y -c conda-forge \
+    bat ripgrep fd-find tokei zoxide \
+    go 
+
 # rust
 if [[ ! $(command -v cargo &>/dev/null) ]]; then
     curl -sSL https://sh.rustup.rs | sh -s -- -y
 fi
 source $HOME/.cargo/env
-
-# rust tools
-cargo install bat ripgrep fd-find tokei zoxide
 
 # ssh key-gen
 if [[ ! -f $HOME/.ssh/id_ed25519 ]]; then
