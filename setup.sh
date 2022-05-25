@@ -104,9 +104,14 @@ zsh
 # git
 git config --global user.name "JX Wang"
 git config --global user.email "jxwang92@gmail.com"
+git config --global core.excludesFile '~/.gitignore_global'
 echo "Done forget add ssh key to github"
-echo '*.swp' >> ~/.gitignore_global 
-echo '*.swo' >> ~/.gitignore_global 
+cat << EOF >> ~/.gitignore_global
+*.swp
+*.swo
+*.iml
+build/
+EOF
 
 # change shell
 sudo usermod -s $(which zsh) $(whoami)
