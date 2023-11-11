@@ -98,7 +98,10 @@ fi
 sudo $PKG_MNGER install $PKG_OPTS git curl wget \
 make cmake autoconf automake \
 gcc g++ clang python3 \
-neovim vim python3-neovim \
+net-tools \
+python3-dev python3-dev python3-pip \
+python3-neovim tmux \
+fzf fd-find zoxide \
 zsh
 
 # git
@@ -134,25 +137,38 @@ conda init zsh
 
 # rust
 curl https://sh.rustup.rs | sh -s -- -y
+export PATH=$PATH:~/.cargo/bin/
+cargo install lsd
+
+# manual install neovim for the latest version
+curl -sSL https://github.com/neovim/neovim/releases/latest/download/nvim-linux64.tar.gz | tar zxf -
 
 # vimrc
-git clone https://github.com/jaxonwang/vimrc ~/vimrc
+git clone -b nvim https://github.com/jaxonwang/vimrc ~/vimrc
 curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
     https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-ln -s ~/vimrc/.vimrc ~/.vimrc
+ln -s ~/vimrc/init.vim ~/.vimrc
 ln -s ~/vimrc/.ideavimrc ~/.ideavimrc
 # vim +'PlugInstall --sync' +qa
 
 # config nvim
 mkdir -p ~/.config/nvim/
-nvim_config="set runtimepath^=~/.vim runtimepath+=~/.vim/after\n
-let &packpath=&runtimepath\n
-source ~/.vimrc"
-echo -e $nvim_config > ~/.config/nvim/init.vim
+> ~/.config/nvim/init.vim cat << EOF
+set runtimepath^=~/.vim runtimepath+=~/.vim/after\n runtimepath+=~/vimrc
+let &packpath=&runtimepath
+source ~/vimrc/init.vim
+EOF
 
 # ssh key-gen
 cat /dev/zero | ssh-keygen -N "" -t ed25519
 
-# set editor
-echo 'export VISUAL="vim"' >> ~/.bashrc
-echo 'export EDITOR="$VISUAL"' >> ~/.bashrc
+# my zsh config
+(cd $HOME && git clone --recursive https://github.com/jaxonwang/myzsh)
+(cd $HOME/myzsh && source setup.sh)
+
+# node js
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
+export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
+nvm install node
+nvm use node
